@@ -43,9 +43,9 @@ const topFiveGroups = async (req, res, next) => {
                 if(item.members.length < pivot.members.length) less.push(item)
                 if(item.members.length > pivot.members.length) greater.push(item)
             }
-            return [...quick_sort(less), pivot, ...equal, ...quick_sort(greater)]
+            return [...quick_sort(greater), pivot, ...equal, ...quick_sort(less)]
         }
-        blogGroups = quick_sort(blogGroups).reverse().slice(0, 5)
+        blogGroups = quick_sort(blogGroups).slice(0, 6)
         return res.status(200).send(blogGroups)
     } catch(err){
         return res.status(500).send({error: 'unable to fetch top five groups'})
@@ -60,14 +60,16 @@ const listAllPosts = async (req, res, next) => {
             let index = Math.floor(Math.random() * arr.length)
             let pivot = arr[index]
             let less = []; let greater = []
+            let equal = []
             for(let item of arr){
-                if(item.likes.length === pivot.likes.length) continue 
+                if(String(item._id) === String(pivot._id)) continue 
+                if(item.likes.length === pivot.likes.length) equal.push(item)
                 if(item.likes.length < pivot.likes.length) less.push(item)
                 if(item.likes.length > pivot.likes.length) greater.push(item)
             }
-            return [...quick_sort(less), pivot, ...quick_sort(greater)]
+            return [...quick_sort(greater), pivot, ...equal, ...quick_sort(less)]
         }
-        posts = quick_sort(posts).reverse()
+        posts = quick_sort(posts)
         return res.status(200).send(posts)
     } catch(err){
         return res.status(500).send({error: 'unable to find posts'})

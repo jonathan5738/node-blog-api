@@ -16,6 +16,9 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+app.get('/', (req, res, next) => {
+    return res.status(200).send({message: 'blog api'})
+})
 app.use('/accounts', userRoutes)
 app.use('/categories', categoryRoutes)
 app.use('/blogs', blogGroupRoutes)

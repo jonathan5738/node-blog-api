@@ -1,7 +1,7 @@
 const express = require('express') 
 const router = express.Router() 
 const { createBlogGroup, blogDetail, editBlogGroup, deleteBlogGroup,
-     listBlogGroup, listBlogGroupsPrivate, joinBlogGroup,
+     listBlogGroup, listBlogGroupsPrivate, joinBlogGroup, listAllPosts,
       listGroupByRegex, blogDetailPrivate, assignAuthorPermission, listGroupJoined, topFiveGroups,
        removeAuthorPermission } = require('../controllers/blogGroupControllers')
 const isLoggedIn = require('../middlewares/isLoggedIn')
@@ -15,6 +15,7 @@ const config = multer({storage})
 router.get('/all', listBlogGroup)
 router.post('/new', config.single('blog_img'), isLoggedIn, createBlogGroup)
 router.post('/join', isLoggedIn, joinBlogGroup)
+router.get('/all/posts', listAllPosts)
 router.get('/top/five', topFiveGroups)
 router.post('/all/search', listGroupByRegex)
 

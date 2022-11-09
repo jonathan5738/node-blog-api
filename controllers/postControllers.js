@@ -39,10 +39,9 @@ const listPosts = async (req, res, next) => {
                 if(item.likes.length < pivot.likes.length) less.push(item)
                 if(item.likes.length > pivot.likes.length) greater.push(item)
             }
-            return [...quick_sort(less), pivot, ...equal, ...quick_sort(greater)]
+            return [...quick_sort(greater), pivot, ...equal, ...quick_sort(less)]
         }
-        posts = quick_sort(posts).reverse()
-        console.log(posts.length)
+        posts = quick_sort(posts)
         return res.status(200).send(posts)
     } catch(err){
         return res.status(500).send({error: 'unable to find posts'})
