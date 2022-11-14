@@ -66,7 +66,10 @@ beforeAll(async () => {
     })
     process.env['ADMIN_ID'] = String(userId)
 })
-
+afterAll(async () => {
+    await BlogGroup.deleteMany()
+    await Category.deleteMany()
+})
 describe('createBlogGroup()', () => {
     test('should return 500 if unauthenticated user access this route', async () => {
         await request(app).post('/blogs/new').send({}).expect(500)

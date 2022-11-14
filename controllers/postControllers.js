@@ -65,7 +65,12 @@ const listPostsByRegex = async (req, res, next) => {
     const {searchTerm} = req.body
     try{
         const regex = new RegExp('^' + searchTerm + '')
-        const posts = await Post.find({group: blog_id, title: {"$regex": regex, "$options": 'i'}})
+        let posts = null
+        if(searchTerm){
+           posts = await Post.find({group: blog_id, title: {"$regex": regex, "$options": 'i'}})
+        } else {
+            posts = await Post.find({group: blog_id})
+        }
         return res.status(200).send(posts)
     } catch(err){
         return res.status(500).send({error: 'unable to find posts'})
