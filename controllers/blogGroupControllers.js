@@ -64,7 +64,7 @@ const listAllPosts = async (req, res, next) => {
     let skipParam = req.query.skipParam 
     if(!skipParam) skipParam = 0
     try{
-        let posts = await Post.find({}).limit(5).skip(skipParam).populate('author', {'username': 1})
+        let posts = await Post.find({}).limit(4).skip(skipParam).populate('author', {'username': 1})
         function quick_sort(arr){
             if(arr.length < 2) return arr 
             let index = Math.floor(Math.random() * arr.length)
