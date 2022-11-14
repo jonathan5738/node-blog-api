@@ -12,6 +12,7 @@ const categoryRoutes = require('./routes/categoryRoutes')
 const blogGroupRoutes = require('./routes/blogGroupRoutes')
 const postRoutes = require('./routes/postRoutes')
 const commentRoutes = require('./routes/commentRoutes')
+
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))

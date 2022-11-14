@@ -2,7 +2,8 @@ const express = require('express')
 const router = express.Router({ mergeParams: true }) 
 const { createPost, listPosts, addParagraph,
      postDetail, editPost, deletePost, editParagraph,
-      deleteParagraph, postDetailPrivate, authorPosts, likePost, dislikePost } = require('../controllers/postControllers')
+      deleteParagraph, postDetailPrivate, authorPosts,
+       likePost, dislikePost, postCount, listPostsByRegex } = require('../controllers/postControllers')
 const isLoggedIn = require('../middlewares/isLoggedIn')
 const isAuthor = require('../middlewares/isAuthor')
 const isPostAuthor = require('../middlewares/isPostAuthor')
@@ -13,7 +14,9 @@ const config = multer({storage})
 
 router.post('/new', config.single('post_img'), isLoggedIn, isAuthor, createPost) 
 router.get('/all', listPosts)
+router.get('/count', postCount)
 router.get('/private/all', isLoggedIn, isAuthor, authorPosts)
+router.post('/all/search', listPostsByRegex)
 router.get('/:post_id/like', isLoggedIn, isMember, likePost)
 router.get('/:post_id/dislike', isLoggedIn, isMember,dislikePost)
 router.get('/:post_id/detail', postDetail)

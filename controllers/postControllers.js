@@ -23,10 +23,22 @@ const createPost = async (req, res, next) => {
     }
 }
 
-const listPosts = async (req, res, next) => {
+const postCount = async (req, res, next) => {
     const {blog_id} = req.params 
     try{
-        let posts = await Post.find({group: blog_id}).populate('author', {'username': 1})
+        const postCount = await Post.find({group: blog_id}).count()
+        return res.status(200).send({ postCount })
+    } catch(err){
+        return res.status(500).send({error: err.message })
+    }
+}
+
+const listPosts = async (req, res, next) => {
+    const {blog_id} = req.params 
+    let skipParam = req.query.skipParam 
+    if(!skipParam) skipParam = 0
+    try{
+        let posts = await Post.find({group: blog_id}).limit(5).skip(skipParam).populate('author', {'username': 1})
         function quick_sort(arr){
             if(arr.length < 2) return arr 
             let index = Math.floor(Math.random() * arr.length)
@@ -48,7 +60,17 @@ const listPosts = async (req, res, next) => {
     }
 }
 
-
+const listPostsByRegex = async (req, res, next) => {
+    const {blog_id} = req.params
+    const {searchTerm} = req.body
+    try{
+        const regex = new RegExp('^' + searchTerm + '')
+        const posts = await Post.find({group: blog_id, title: {"$regex": regex, "$options": 'i'}})
+        return res.status(200).send(posts)
+    } catch(err){
+        return res.status(500).send({error: 'unable to find posts'})
+    }
+}
 const authorPosts = async (req, res, next) => {
     const { blog_id } = req.params 
     try{
@@ -207,4 +229,5 @@ const deletePost = async (req, res, next) => {
 }
 module.exports = { createPost, editPost, listPosts,
      addParagraph, postDetail, deletePost, editParagraph,
-      deleteParagraph, postDetailPrivate, authorPosts, likePost, dislikePost }
+      deleteParagraph, postDetailPrivate, authorPosts, likePost,
+ dislikePost, postCount, listPostsByRegex }

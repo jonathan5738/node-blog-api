@@ -52,9 +52,19 @@ const topFiveGroups = async (req, res, next) => {
     }
 }
 
-const listAllPosts = async (req, res, next) => {
+const allPostCount = async (req, res, next) => {
     try{
-        let posts = await Post.find({}).populate('author', {'username': 1})
+        const postCount = await Post.find({}).count()
+        return res.status(200).send({postCount})
+    } catch(err){
+        return res.status(500).send({error: 'unable to fetch posts count'})
+    }
+}
+const listAllPosts = async (req, res, next) => {
+    let skipParam = req.query.skipParam 
+    if(!skipParam) skipParam = 0
+    try{
+        let posts = await Post.find({}).limit(5).skip(skipParam).populate('author', {'username': 1})
         function quick_sort(arr){
             if(arr.length < 2) return arr 
             let index = Math.floor(Math.random() * arr.length)
@@ -147,25 +157,42 @@ const removeAuthorPermission = async (req, res, next) => {
 
 const listGroupByRegex = async (req, res, next) => {
     const {searchTerm, category_name} = req.body
+    let skipParam = req.query.skipParam 
+    if(!skipParam) skipParam = 0
     try{
         const regex = new RegExp('^' + searchTerm + '')
         const category = await Category.findOne({name: category_name}).populate('groups')
-        const blogGroups = await BlogGroup.find({name: {"$regex": regex, "$options": 'i'}, category})
+        const blogGroups = await BlogGroup.find({name: {"$regex": regex, "$options": 'i'}, category}).limit(3).skip(skipParam)
         return res.status(200).send(blogGroups)
     } catch(err){
         return res.status(400).send({ error: err.message })
     }
 }
 
+const allGroupCount = async (req, res, next) => {
+    const {searchTerm, category_name} = req.body
+    try{
+        const regex = new RegExp('^' + searchTerm + '')
+        const category = await Category.findOne({name: category_name}).populate('groups')
+        const blogGroupCount = await BlogGroup.find({name: {"$regex": regex, "$options": 'i'}, category}).count()
+        return res.status(200).send(blogGroupCount)
+    } catch(err){
+        return res.status(500).send({ error: err.message })
+    }
+}
+
+
 const listBlogGroup = async (req, res, next) => {
     const {category_name} = req.query
+    let skipParam = req.query.skipParam 
+    if(!skipParam) skipParam = 0
     try{
         let blogGroups
         if(!category_name){
             blogGroups = await BlogGroup.find({})
         } else {
-            const category = await Category.findOne({name: category_name}).populate('groups')
-            blogGroups = category.groups
+            const category = await Category.findOne({name: category_name})
+            blogGroups = await BlogGroup.find({category: category}).limit(3).skip(skipParam)
         }
         return res.status(200).send(blogGroups)
     } catch(err){
@@ -174,11 +201,23 @@ const listBlogGroup = async (req, res, next) => {
 }
 
 const listBlogGroupsPrivate = async (req, res, next) => {
-    const user = await User.findById({_id: req.user._id}).populate('groups')
-    let blogGroups = user.groups
-    return res.status(200).send(blogGroups)
+    let skipParam = req.query.skipParam 
+    if(!skipParam) skipParam = 0
+    try{
+        let blogGroups = await BlogGroup.find({admin: req.user._id}).limit(3).skip(skipParam)
+        return res.status(200).send(blogGroups)
+    } catch(err){
+        return res.status(500).send({ error: err.message })
+    }
 }
-
+const listBlogGroupPrivateCount = async (req, res, next) => {
+    try{
+        const countCreatedBlogs = await BlogGroup.find({admin: req.user._id}).count()
+        return res.status(200).send({countBlogGroup: countCreatedBlogs})
+    } catch(err){
+        return res.status(500).send({ error: err.message })
+    }
+}
 const editBlogGroup = async (req, res, next) => {
     const { blog_id } = req.params
     const allowedUpdates = ['name', 'description']
@@ -213,5 +252,7 @@ const deleteBlogGroup = async (req, res, next) => {
 module.exports = { 
      createBlogGroup, editBlogGroup, blogDetail, deleteBlogGroup,
      listBlogGroup, listBlogGroupsPrivate, joinBlogGroup, listGroupByRegex, listAllPosts,
-     blogDetailPrivate, assignAuthorPermission, removeAuthorPermission, listGroupJoined, topFiveGroups
+     blogDetailPrivate, assignAuthorPermission,
+      removeAuthorPermission, listGroupJoined, topFiveGroups, allPostCount, listBlogGroupPrivateCount,
+      allGroupCount
  }
