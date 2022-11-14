@@ -16,7 +16,7 @@ const loginUser = async (req, res, next) => {
     try{
         const user = await User.findUserByCredentials(username, password)
         const token = await user.generateAuthToken()
-        return res.status(201).send({user: { _id: user._id, first_name: user.first_name }, token})
+        return res.status(200).send({user: { _id: user._id, first_name: user.first_name }, token})
     } catch(err){
         return res.status(400).send({ error: err.message })
     }

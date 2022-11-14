@@ -7,13 +7,17 @@ const Post = require('../models/post')
 
 const createBlogGroup = async (req, res, next) => {
     const {name, description, category_name} = req.body
-    const blog_img = {url: req.file.path, filename: req.file.filename}
     try {
+        const blog_img = {url: req?.file?.path, filename: req?.file?.filename}
         const category = await Category.findOne({name: category_name})
-        await BlogGroup.create({name, description, admin: req.user._id, blog_img, category})
+        if(req.file){
+            await BlogGroup.create({name, description, admin: req.user._id, blog_img, category})
+        } else {
+            await BlogGroup.create({name, description, admin: req.user._id, category})
+        }
         const user = await User.findById({_id: req.user._id}).populate('groups')
         let blogGroups = user.groups
-        return res.status(200).send(blogGroups)
+        return res.status(201).send(blogGroups)
     } catch(err){
         return res.status(400).send({ error: err.message })
     }
@@ -23,6 +27,7 @@ const blogDetail = async (req, res, next) => {
     const { blog_id } = req.params 
     try {
          const blogGroup = await BlogGroup.findById({_id: blog_id})
+         if(!blogGroup) return res.status(404).send({error: 'blog not found'})
          return res.status(200).send(blogGroup)
     } catch(err){
         return res.status(404).send({error: 'unable to find group'})
@@ -112,13 +117,15 @@ const joinBlogGroup = async (req, res, next) => {
     try{
         const user = await User.findById({_id: user_id})
         if(!user) return res.status(404).send({ error: 'user not found'})
-        let blogGroup = await BlogGroup.findByIdAndUpdate({_id: blog_id}, {"$addToSet": {"members": user._id }})
+        let blogGroup = await BlogGroup.findByIdAndUpdate({_id: blog_id}, {"$addToSet": {"members": user._id }}, {new: true})
+
+        if(!blogGroup) return res.status(404).send({error: 'blog not found'})
 
         const category = await Category.findOne({name: category_name}).populate('groups')
         let blogGroups = category.groups
         return res.status(200).send(blogGroups)
     } catch(err){
-        return res.status(500).send({ error: err.message })
+        return res.status(400).send({ error: err.message })
     }
 }
 
@@ -232,7 +239,6 @@ const editBlogGroup = async (req, res, next) => {
             blogGroup = await BlogGroup.findByIdAndUpdate({_id: blog_id }, {...req.body}, {new: true})
         }
         const user = await User.findById({_id: req.user._id}).populate('groups')
-        let blogGroups = user.groups
         return res.status(200).send(blogGroup)
     } catch(err){
         return res.status(500).send({ error: err.message })
